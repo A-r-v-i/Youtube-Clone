@@ -1,26 +1,59 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react'
+import { Grid } from '@material-ui/core';
+import { SearchBar, VideoDetail, VideoList } from './components';
+import youtube from './api/youtube';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends Component {
+    state = {
+        videos: [],
+        selectedVideo: null
+    }
+
+    componentDidMount(){
+        this.handleSubmit('Mr.Bean')
+    }
+
+    onVideoSelect=(video)=>{
+        this.setState({ selectedVideo: video })
+    }
+
+    handleSubmit = async (searchTerm) => {
+        const response = await youtube.get('search', {
+            params: {
+                part: 'snippet',
+                maxResults: 10,
+                key: 'AIzaSyDQ6cMzZayJBGlrc1omdJ8p2IIYi2ZToFk',
+                q: searchTerm
+            }
+        });
+
+        console.log(response.data.items)
+
+        this.setState({
+            videos: response.data.items,
+            selectedVideo: response.data.items[0]
+        })
+    }
+    render() {
+        const { selectedVideo, videos } = this.state
+        return (
+            <div>
+            <Grid justify="center" container spacing={10}>
+                <Grid item xs={12}>
+                    <Grid  container spacing={10}>
+                        <Grid item xs={12}>
+                            <SearchBar onFormSubmit={this.handleSubmit} />
+                        </Grid>
+                        <Grid item xs={8}>
+                            <VideoDetail video={selectedVideo} />
+                        </Grid>
+                        <Grid  item xs={4}>
+                            <VideoList videos={videos} onVideoSelect={this.onVideoSelect} />
+                        </Grid>
+                    </Grid>
+                </Grid> 
+            </Grid>
+            </div>
+        )
+    }
 }
-
-export default App;
